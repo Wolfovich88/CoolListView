@@ -34,9 +34,9 @@ QList<CoolListItem> DataLoader::loadBack(int count)
         limit = m_totalCount - m_backPosition;
     }
 
-    QString queryContent = QString("SELECT * FROM entries LIMIT %1 OFFSET %2").arg(limit).arg(offset);
+    QString queryContent = QString("SELECT * FROM entries LIMIT %1 OFFSET %2").arg(--limit).arg(offset);
 
-    qDebug() << "Query:" << queryContent;
+    qDebug() << __FUNCTION__ << "Query:" << queryContent;
 
     QSqlQuery query(queryContent, m_db);
 
@@ -62,8 +62,10 @@ QList<CoolListItem> DataLoader::loadFront(int count)
         qDebug() << m_db.lastError().text();
         return items;
     }
-    int offset(m_frontPosition);
+    int offset(m_frontPosition - count);
     int limit(count);
+
+    qDebug() << "Position:" << m_frontPosition;
 
     if (m_frontPosition < count)
     {
@@ -83,7 +85,7 @@ QList<CoolListItem> DataLoader::loadFront(int count)
         item.setNickName(query.value(1).toString());
         item.setMessageText(query.value(2).toString());
         items << item;
-        m_frontPosition--;
+        --m_frontPosition;
     }
 
     m_db.close();

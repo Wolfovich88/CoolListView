@@ -45,7 +45,7 @@ Window {
             //console.debug("ContentY: " + contentY + " index: " +  contentIndex + "delta: " + delta)
             if (contentIndex === 0 && coolListModel.canFetchMoreFront()) {
                 coolListModel.fetchMoreFront()
-                positionViewAtIndex(100, ListView.Beginning)
+                positionViewAtIndex(coolListModel.chunkSize, ListView.Beginning)
             }
             lastY = contentY
         }

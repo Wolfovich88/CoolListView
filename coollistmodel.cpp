@@ -2,7 +2,7 @@
 #include <QVariant>
 
 CoolListModel::CoolListModel(QObject *parent)
-    : QAbstractListModel(parent)
+    : QAbstractListModel(parent), m_chunkSize(100)
 {
     qRegisterMetaType<CoolListItem>();
 }
@@ -31,10 +31,10 @@ bool CoolListModel::canFetchMore(const QModelIndex &parent) const
 
 void CoolListModel::fetchMore(const QModelIndex &parent)
 {
-    auto loadedList = m_dataLoader.loadBack();
+    auto loadedList = m_dataLoader.loadBack(chunkSize());
     qDebug() << __FUNCTION__ << loadedList.size();
     append(loadedList);
-    removeUnusedFrontItems(200, 100); //Unload front elements
+    removeUnusedFrontItems(2 * chunkSize(), chunkSize()); //Unload front elements
 }
 
 QVariant CoolListModel::data(const QModelIndex &index, int role) const
@@ -131,7 +131,7 @@ void CoolListModel::replace(const CoolListItem &item, int position)
 
 void CoolListModel::removeUnusedFrontItems(int treshold, int count)
 {
-    if (m_list.size() > treshold)
+    if (rowCount() > treshold)
     {
         remove(0, count);
         int fPos = m_dataLoader.frontPosition();
@@ -144,7 +144,7 @@ void CoolListModel::removeUnusedFrontItems(int treshold, int count)
 
 void CoolListModel::removeUnusedBackItems(int treshold, int count)
 {
-    if (m_list.size() > treshold)
+    if (rowCount() > treshold)
     {
         remove(rowCount() - count - 1, count);
         m_dataLoader.setBackPosition(m_dataLoader.backPosition() - count);
@@ -163,11 +163,22 @@ void CoolListModel::fetchMoreFront()
 {
     if (canFetchMoreFront())
     {
-        auto loadedList = m_dataLoader.loadFront();
+        auto loadedList = m_dataLoader.loadFront(chunkSize());
         qDebug() << __FUNCTION__ << loadedList.size();
         prepend(loadedList);
-        removeUnusedBackItems(200, 100); //Unload back elements
+        removeUnusedBackItems(2 * chunkSize(), chunkSize()); //Unload back elements
     }
 }
 
+int CoolListModel::chunkSize() const
+{
+    return m_chunkSize;
+}
 
+void CoolListModel::setChunkSize(int newChunkSize)
+{
+    if (m_chunkSize == newChunkSize)
+        return;
+    m_chunkSize = newChunkSize;
+    emit chunkSizeChanged();
+}

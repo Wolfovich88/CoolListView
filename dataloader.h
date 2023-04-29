@@ -11,8 +11,8 @@ class DataLoader : public QObject
 public:
     explicit DataLoader(QObject *parent = nullptr);
 
-    QList<CoolListItem> loadBack(int count = 100);
-    QList<CoolListItem> loadFront(int count = 100);
+    QList<CoolListItem> loadBack(int count);
+    QList<CoolListItem> loadFront(int count);
 
     /*!
      * \brief totalCount contains total size of database notes

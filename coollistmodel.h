@@ -12,6 +12,7 @@ class CoolListModel : public QAbstractListModel
     Q_OBJECT
 
     Q_PROPERTY(int count READ count NOTIFY countChanged)
+    Q_PROPERTY(int chunkSize READ chunkSize WRITE setChunkSize NOTIFY chunkSizeChanged)
 
 public:
     enum ModelRoles {
@@ -57,12 +58,17 @@ public:
     Q_INVOKABLE bool canFetchMoreFront();
     Q_INVOKABLE void fetchMoreFront();
 
+    int chunkSize() const;
+    void setChunkSize(int newChunkSize);
+
 signals:
     void countChanged();
+    void chunkSizeChanged();
 
 private:
     QList<CoolListItem> m_list;
     DataLoader m_dataLoader;
+    int m_chunkSize;
 };
 
 #endif // COOLLISTMODEL_H
