@@ -43,6 +43,8 @@ QVariant CoolListModel::data(const QModelIndex &index, int role) const
     {
         switch (role) {
         case Qt::DisplayRole:
+        case MessageIndexRole:
+            return QVariant::fromValue(m_list[index.row()].messageIndex());
         case NickNameRole:
             return QVariant::fromValue(m_list[index.row()].nickName());
         case MessageTextRole:
@@ -56,6 +58,7 @@ QVariant CoolListModel::data(const QModelIndex &index, int role) const
 QHash<int, QByteArray> CoolListModel::roleNames() const
 {
     QHash<int, QByteArray> roles;
+    roles[MessageIndexRole] = "messageIndex";
     roles[NickNameRole] = "nickName";
     roles[MessageTextRole] = "messageText";
     return roles;
@@ -87,9 +90,11 @@ void CoolListModel::append(const QList<CoolListItem> &list)
 void CoolListModel::prepend(const QList<CoolListItem> &list)
 {
     beginInsertRows(QModelIndex(), 0, list.size());
-    foreach (auto item, list)
+    auto iter = list.end() - 1;
+    while (iter != list.begin() - 1)
     {
-        m_list.push_front(item);
+        m_list.push_front(*iter);
+        iter--;
     }
     endInsertRows();
     emit countChanged();

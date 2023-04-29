@@ -13,7 +13,6 @@ DataLoader::DataLoader(QObject *parent)
     refreshTotalCount();
     m_backPosition = 0;
     m_frontPosition = 0;
-    loadBack();
     qDebug() << "Loaded:" << m_db.databaseName() << m_db.lastError().text();
 }
 
@@ -43,8 +42,9 @@ QList<CoolListItem> DataLoader::loadBack(int count)
 
     CoolListItem item;
     while (query.next()) {
-        item.setNickName(query.value(0).toString());
-        item.setMessageText(query.value(1).toString());
+        item.setMessageIndex(query.value(0).toInt());
+        item.setNickName(query.value(1).toString());
+        item.setMessageText(query.value(2).toString());
         items << item;
         m_backPosition++;
     }
@@ -79,8 +79,9 @@ QList<CoolListItem> DataLoader::loadFront(int count)
 
     CoolListItem item;
     while (query.next()) {
-        item.setNickName(query.value(0).toString());
-        item.setMessageText(query.value(1).toString());
+        item.setMessageIndex(query.value(0).toInt());
+        item.setNickName(query.value(1).toString());
+        item.setMessageText(query.value(2).toString());
         items << item;
         m_frontPosition--;
     }

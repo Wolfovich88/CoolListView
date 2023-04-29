@@ -43,9 +43,9 @@ Window {
             var contentIndex = indexAt(contentX, contentY)
             var delta = lastY > contentY
             //console.debug("ContentY: " + contentY + " index: " +  contentIndex + "delta: " + delta)
-            if (contentIndex === 10 && coolListModel.canFetchMoreFront()) {
+            if (contentIndex === 0 && coolListModel.canFetchMoreFront()) {
                 coolListModel.fetchMoreFront()
-                positionViewAtIndex(110, ListView.Beginning)
+                positionViewAtIndex(100, ListView.Beginning)
             }
             lastY = contentY
         }
@@ -61,16 +61,21 @@ Window {
 
             Row {
                 id: contentRow
-                spacing: 5
+                spacing: 20
+
+                Text {
+                    id: msgIndexTxt
+                    text: messageIndex ? messageIndex : ""
+                }
 
                 Text {
                     id: nickTxt
-                    text: nickName
+                    text: nickName ? nickName : ""
                 }
 
                 Text {
                     id: textTxt
-                    text: messageText
+                    text: messageText ? messageText : ""
                 }
             }
 

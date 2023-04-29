@@ -1,8 +1,7 @@
-
 #include "coollistitem.h"
 
-CoolListItem::CoolListItem(const QString nickname, const QString messageText)
-    : m_nickName(nickname), m_messageText(messageText)
+CoolListItem::CoolListItem(const QString nickname, const QString messageText, int itemIndex)
+    : m_nickName(nickname), m_messageText(messageText), m_messageIndex(itemIndex)
 {
 
 }
@@ -19,17 +18,21 @@ QString CoolListItem::messageText() const
 
 void CoolListItem::setNickName(const QString &value)
 {
-    if (value != m_nickName)
-    {
-        m_nickName = value;
-    }
+    m_nickName = value;
 }
 
 void CoolListItem::setMessageText(const QString &value)
 {
-    if (value != m_messageText)
-    {
-        m_messageText = value;
-    }
+    m_messageText = value;
+}
+
+int CoolListItem::messageIndex() const
+{
+    return m_messageIndex;
+}
+
+void CoolListItem::setMessageIndex(int value)
+{
+    m_messageIndex = value;
 }
 

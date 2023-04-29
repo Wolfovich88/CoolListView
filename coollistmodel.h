@@ -15,8 +15,9 @@ class CoolListModel : public QAbstractListModel
 
 public:
     enum ModelRoles {
-        NickNameRole = Qt::UserRole + 1,
-        MessageTextRole
+        MessageIndexRole = Qt::UserRole + 1,
+        NickNameRole,
+        MessageTextRole,
     };
 
     explicit CoolListModel(QObject *parent = nullptr);
