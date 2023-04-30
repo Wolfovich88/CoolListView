@@ -9,14 +9,6 @@ Window {
     visible: true
     title: qsTr("Cool ListView")
 
-//    Connections {
-//        target: coolListModel
-
-//        function onDataChanged() {
-//            console.debug("DATA CHANGED")
-//            view.forceLayout()
-//        }
-//    }
     Component {
         id: highlighRect
 
@@ -76,6 +68,7 @@ Window {
                 Text {
                     id: textTxt
                     text: messageText ? messageText : ""
+                    wrapMode: Text.Wrap
                 }
             }
 
@@ -85,7 +78,23 @@ Window {
                 onPressed: {
                     view.currentIndex = index
                 }
+
+                onPressAndHold: {
+                    editorLoader.active = true
+                }
             }
+        }
+    }
+
+    Loader {
+        id: editorLoader
+
+        anchors.fill: parent
+        active: false
+        sourceComponent: Editor {
+            itemIndex: view.currentIndex
+
+            onClose: editorLoader.active = false
         }
     }
 }

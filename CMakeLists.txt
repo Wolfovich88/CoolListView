@@ -17,7 +17,7 @@ qt_add_executable(appCoolListView
 qt_add_qml_module(appCoolListView
     URI CoolListView
     VERSION 1.0
-    QML_FILES Main.qml CoolListView.qml
+    QML_FILES Main.qml CoolListView.qml Editor.qml
 )
 
 set_target_properties(appCoolListView PROPERTIES

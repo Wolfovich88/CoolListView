@@ -47,18 +47,22 @@ public:
 
     void insert(const CoolListItem &item, int position);
 
-    void remove(int position, int count = 1);
-
     void replace(const CoolListItem &item, int position);
 
     void removeUnusedFrontItems(int treshold, int count);
+
     void removeUnusedBackItems(int treshold, int count);
 
+    Q_INVOKABLE void addItem(int position);
+
+    Q_INVOKABLE void remove(int position, int count = 0);
 
     Q_INVOKABLE bool canFetchMoreFront();
+
     Q_INVOKABLE void fetchMoreFront();
 
     int chunkSize() const;
+
     void setChunkSize(int newChunkSize);
 
 signals:

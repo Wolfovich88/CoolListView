@@ -1,5 +1,6 @@
 #include "coollistmodel.h"
 #include <QVariant>
+#include <QRandomGenerator>
 
 CoolListModel::CoolListModel(QObject *parent)
     : QAbstractListModel(parent), m_chunkSize(100)
@@ -107,6 +108,8 @@ void CoolListModel::insert(const CoolListItem &item, int position)
     beginInsertRows(QModelIndex(), p, p);
     m_list.insert(p, item);
     endInsertRows();
+    int backPos = m_dataLoader.backPosition();
+    m_dataLoader.setBackPosition(++backPos);
     emit countChanged();
 }
 
@@ -117,6 +120,8 @@ void CoolListModel::remove(int position, int count)
     beginRemoveRows(QModelIndex(), position, position + count);
     m_list.remove(position, count);
     endRemoveRows();
+    int backPos = m_dataLoader.backPosition() - count - 1;
+    m_dataLoader.setBackPosition(backPos);
     emit countChanged();
 }
 
@@ -150,6 +155,33 @@ void CoolListModel::removeUnusedBackItems(int treshold, int count)
         m_dataLoader.setBackPosition(m_dataLoader.backPosition() - count);
         qDebug() << __FUNCTION__ << "treshold:" << treshold << "count:" << count << "back pos:" << m_dataLoader.backPosition()
                  << "front pos:" << m_dataLoader.frontPosition();
+    }
+}
+
+void CoolListModel::addItem(int position)
+{
+    if (position > -1 && position < rowCount() - 1)
+    {
+        auto getRandomString = [] (int length) -> QString {
+            const QString characters("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
+
+            QString result;
+            result.reserve(length);
+
+            for (int i = 0; i < length; ++i) {
+                const int index = QRandomGenerator::global()->bounded(characters.length());
+                result.append(characters.at(index));
+            }
+
+            return result;
+        };
+        const QString nick = getRandomString(10);
+        const QString message = getRandomString(QRandomGenerator::global()->bounded(30, 100));
+        CoolListItem item;
+        item.setMessageIndex(position);
+        item.setNickName(nick);
+        item.setMessageText(message);
+        insert(item, position);
     }
 }
 
