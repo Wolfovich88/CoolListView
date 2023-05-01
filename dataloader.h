@@ -5,6 +5,11 @@
 #include "coollistitem.h"
 #include <QObject>
 #include <QtSql/QSqlDatabase>
+
+#define NICK_MAX_LEN 10
+#define MSG_MAX_LEN 100
+#define MSG_MIN_LEN 20
+
 class DataLoader : public QObject
 {
     Q_OBJECT
@@ -30,9 +35,16 @@ public:
 
     void refreshTotalCount();
 
+    static const QString getRandomString(int length);
+
 signals:
     void loaded(int count);
+    void error(const QString &error);
 
+private:
+
+    void generateContent();
+    bool openDatabase();
 private:
     int m_totalCount;
     int m_backPosition;

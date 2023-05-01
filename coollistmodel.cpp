@@ -6,6 +6,7 @@ CoolListModel::CoolListModel(QObject *parent)
     : QAbstractListModel(parent), m_chunkSize(100)
 {
     qRegisterMetaType<CoolListItem>();
+    connect(&m_dataLoader, &DataLoader::error, this, &CoolListModel::error);
 }
 
 int CoolListModel::rowCount(const QModelIndex &parent) const
@@ -23,10 +24,10 @@ bool CoolListModel::hasChildren(const QModelIndex &parent) const
 
 bool CoolListModel::canFetchMore(const QModelIndex &parent) const
 {
-    bool fetch = m_dataLoader.backPosition() < m_dataLoader.totalCount();
-    qDebug() << __FUNCTION__ << fetch;
     if (parent.isValid())
         return false;
+    bool fetch = m_dataLoader.backPosition() < m_dataLoader.totalCount();
+    qDebug() << __FUNCTION__ << fetch;
     return fetch;
 }
 
@@ -162,21 +163,8 @@ void CoolListModel::addItem(int position)
 {
     if (position > -1 && position < rowCount() - 1)
     {
-        auto getRandomString = [] (int length) -> QString {
-            const QString characters("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
-
-            QString result;
-            result.reserve(length);
-
-            for (int i = 0; i < length; ++i) {
-                const int index = QRandomGenerator::global()->bounded(characters.length());
-                result.append(characters.at(index));
-            }
-
-            return result;
-        };
-        const QString nick = getRandomString(10);
-        const QString message = getRandomString(QRandomGenerator::global()->bounded(30, 100));
+        const QString nick = DataLoader::getRandomString(NICK_MAX_LEN);
+        const QString message = DataLoader::getRandomString(QRandomGenerator::global()->bounded(MSG_MIN_LEN, MSG_MAX_LEN));
         CoolListItem item;
         item.setMessageIndex(position);
         item.setNickName(nick);

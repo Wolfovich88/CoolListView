@@ -11,7 +11,11 @@ parser.add_argument('filename')
 args = parser.parse_args()
 databaseName = args.filename
 
-print(databaseName)
+print("Generated database:" + databaseName)
+dir_path = os.path.dirname(databaseName)
+
+if dir_path:
+    os.makedirs(dir_path, exist_ok=True)
 
 if os.path.exists(databaseName):
     os.remove(databaseName)

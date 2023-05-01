@@ -4,8 +4,8 @@ import QtQuick.Window
 Window {
     id: root
 
-    width: 640
-    height: 480
+    width: 480
+    height: 640
     visible: true
     title: qsTr("Cool ListView")
 
@@ -17,6 +17,27 @@ Window {
             height: view.currentItem  ? view.currentItem.height : 0
             color: "lightsteelblue"
             y: view.currentItem ? view.currentItem.y : 0
+        }
+    }
+
+    Component {
+        id: errorScreenComponent
+
+        Rectangle {
+            id: errorScreen
+
+            property alias errorText: errorTxt.text
+
+            anchors.fill: parent
+            color: "red"
+            opacity: 0.5
+
+            Text {
+                id: errorTxt
+
+                font.pixelSize: 20
+                anchors.centerIn: parent
+            }
         }
     }
 
@@ -55,6 +76,8 @@ Window {
                 id: contentRow
                 spacing: 20
 
+                height: 40
+
                 Text {
                     id: msgIndexTxt
                     text: messageIndex ? messageIndex : ""
@@ -66,7 +89,8 @@ Window {
                 }
 
                 Text {
-                    id: textTxt
+                    id: mgsTxt
+                    height: 100
                     text: messageText ? messageText : ""
                     wrapMode: Text.Wrap
                 }
@@ -95,6 +119,32 @@ Window {
             itemIndex: view.currentIndex
 
             onClose: editorLoader.active = false
+        }
+    }
+
+    Loader {
+        id: errorScreenLoader
+
+        property string errorString: ""
+
+        anchors.fill: parent
+        active: false
+        sourceComponent: errorScreenComponent
+
+        onLoaded: {
+            errorScreenLoader.item.errorText = errorString
+        }
+    }
+
+    Connections {
+        target: coolListModel
+
+        function onError(errorString) {
+            if (errorString !== "") {
+                errorScreenLoader.errorString = errorString
+                editorLoader.active = false
+                errorScreenLoader.active = true
+            }
         }
     }
 }

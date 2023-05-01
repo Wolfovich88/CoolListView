@@ -31,10 +31,18 @@ set_target_properties(appCoolListView PROPERTIES
 target_link_libraries(appCoolListView
     PRIVATE Qt6::Quick Qt6::Sql
 )
+#Generating database
+execute_process(COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/generator.py "${CMAKE_CURRENT_BINARY_DIR}/android/testdatabase.db")
+
+set(ANDROID_PACKAGE_SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/android CACHE INTERNAL "")
+
+message("PROJECT_SOURCE_DIR: " + ${PROJECT_SOURCE_DIR})
 
 install(TARGETS appCoolListView
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-#Generating database
-execute_process(COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/generator.py "${CMAKE_CURRENT_BINARY_DIR}/testdatabase.db")
+set(ANDROID_EXTRA_PERMISSIONS
+    "android.permission.READ_EXTERNAL_STORAGE"
+    "android.permission.WRITE_EXTERNAL_STORAGE"
+)

@@ -68,6 +68,7 @@ public:
 signals:
     void countChanged();
     void chunkSizeChanged();
+    void error(const QString &error);
 
 private:
     QList<CoolListItem> m_list;

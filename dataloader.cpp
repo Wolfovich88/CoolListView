@@ -2,27 +2,49 @@
 #include <QtSql/QSqlError>
 #include <QtSql/QSqlQuery>
 #include <QDir>
+#include <QRandomGenerator>
 #include "dataloader.h"
+
+namespace {
+const QLatin1String dbShortName ("testdatabase.db");
+};
 
 DataLoader::DataLoader(QObject *parent)
     : QObject{parent}
 {
     // Create a database connection
     m_db = QSqlDatabase::addDatabase("QSQLITE");
-    m_db.setDatabaseName("./testdatabase.db");
+    const QString dbPath = QDir::currentPath() + QDir::separator() + ::dbShortName;
+//    QFile file(dbPath);
+
+//    if (!file.open(QIODevice::ReadWrite)) {
+//        qDebug() << "Failed to open file for writing.";
+//        return;
+//    }
+//    file.close();
+//    QFile::setPermissions(dbPath, QFile::WriteUser | QFile::ReadUser);
+
+    m_db.setDatabaseName(dbPath);
     refreshTotalCount();
+    if (m_totalCount == 0)
+    {
+        generateContent();
+        refreshTotalCount();
+    }
     m_backPosition = 0;
     m_frontPosition = 0;
     qDebug() << "Loaded:" << m_db.databaseName() << m_db.lastError().text();
+    qDebug() << "Count:" << m_totalCount;
+
+    if (m_totalCount == 0)
+        emit error("Error! Can not load database items.");
 }
 
 QList<CoolListItem> DataLoader::loadBack(int count)
 {
     // Open the database
     QList<CoolListItem> items;
-    if (!m_db.open()) {
-        qDebug() << "Failed to open database:";
-        qDebug() << m_db.lastError().text();
+    if (!openDatabase()) {
         return items;
     }
 
@@ -57,9 +79,7 @@ QList<CoolListItem> DataLoader::loadBack(int count)
 QList<CoolListItem> DataLoader::loadFront(int count)
 {
     QList<CoolListItem> items;
-    if (!m_db.open()) {
-        qDebug() << "Failed to open database:";
-        qDebug() << m_db.lastError().text();
+    if (!openDatabase()) {
         return items;
     }
     int offset(m_frontPosition - count);
@@ -120,9 +140,7 @@ void DataLoader::setFrontPosition(int pos)
 void DataLoader::refreshTotalCount()
 {
     // Open the database
-    if (!m_db.open()) {
-        qDebug() << "Failed to open database:";
-        qDebug() << m_db.lastError().text();
+    if (!openDatabase()) {
         return;
     }
 
@@ -138,6 +156,54 @@ void DataLoader::refreshTotalCount()
     qDebug() << "Total entries:" << m_totalCount;
 
     m_db.close();
+}
+
+const QString DataLoader::getRandomString(int length)
+{
+    const QString characters("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
+
+    QString result;
+    result.reserve(length);
+
+    for (int i = 0; i < length; ++i) {
+        const int index = QRandomGenerator::global()->bounded(characters.length());
+        result.append(characters.at(index));
+    }
+    return result;
+}
+
+void DataLoader::generateContent()
+{
+    if (!openDatabase())
+    {
+        return;
+    }
+    QSqlQuery query(m_db);
+    query.exec("CREATE TABLE entries (id INTEGER PRIMARY KEY, name TEXT, message TEXT)");
+    for(int i = 0; i < 10000; i++)
+    {
+        const QString name = DataLoader::getRandomString(NICK_MAX_LEN);
+        const QString msg = DataLoader::getRandomString(QRandomGenerator::global()->bounded(MSG_MIN_LEN, MSG_MAX_LEN));
+        const int id = i + 1;
+        query.prepare("INSERT INTO entries (id, name, message) "
+                      "VALUES (:id, :name, :message)");
+        query.bindValue(":id", id);
+        query.bindValue(":name", name);
+        query.bindValue(":message", msg);
+        query.exec();
+    }
+    m_db.close();
+}
+
+bool DataLoader::openDatabase()
+{
+    if (!m_db.open()) {
+        qDebug() << "Failed to open database:";
+        qDebug() << m_db.lastError().text();
+        emit error(m_db.lastError().text());
+        return false;
+    }
+    return true;
 }
 
 
