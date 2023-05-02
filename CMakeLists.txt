@@ -33,11 +33,11 @@ target_link_libraries(appCoolListView
 )
 #Generating database
 if (ANDROID)
-    message("Android building")
+    message("++++++ Android building +++++++++++++++++")
     set(DB_PATH "${CMAKE_CURRENT_BINARY_DIR}/android/testdatabase.db")
     set(ANDROID_PACKAGE_SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/android CACHE INTERNAL "")
 else()
-    message("Windows building")
+    message("--------- Non Android building -----------")
     set(DB_PATH "${CMAKE_CURRENT_BINARY_DIR}/testdatabase.db")
 endif()
 

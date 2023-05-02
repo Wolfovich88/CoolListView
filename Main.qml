@@ -76,7 +76,7 @@ Window {
                 id: contentRow
                 spacing: 20
 
-                height: 40
+                height: 30
 
                 Text {
                     id: msgIndexTxt
@@ -90,7 +90,6 @@ Window {
 
                 Text {
                     id: mgsTxt
-                    height: 100
                     text: messageText ? messageText : ""
                     wrapMode: Text.Wrap
                 }

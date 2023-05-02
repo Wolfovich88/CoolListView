@@ -16,7 +16,7 @@ Item {
         opacity: 0.5
     }
 
-    Row {
+    Column {
         spacing: 10
 
         anchors.centerIn: parent
@@ -25,7 +25,7 @@ Item {
             id: addBtn
             width: 150
             height: 100
-            text: "Add item after current"
+            text: "Add after"
 
             onClicked: {
                 if (itemIndex >= 0) {
@@ -39,10 +39,21 @@ Item {
             id: removeBtn
             width: 150
             height: 100
-            text: "Delete current item"
+            text: "Delete"
 
             onClicked: {
                 coolListModel.remove(itemIndex)
+                close()
+            }
+        }
+
+        Button {
+            id: cancelBtn
+            width: 150
+            height: 100
+            text: "Cancel"
+
+            onClicked: {
                 close()
             }
         }
