@@ -7,6 +7,12 @@
 #include <QList>
 #include "dataloader.h"
 
+/*!
+ * \brief The CoolListModel class - implements a ListModel with dynamically loaded content from DataLoader
+ * Elements are loaded to back and unloaded from front if user scrolls ListView down, if user scrolls
+ * ListView up elements are loaded to front and removed from back.
+ */
+
 class CoolListModel : public QAbstractListModel
 {
     Q_OBJECT

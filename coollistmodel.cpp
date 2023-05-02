@@ -24,9 +24,7 @@ bool CoolListModel::hasChildren(const QModelIndex &parent) const
 
 bool CoolListModel::canFetchMore(const QModelIndex &parent) const
 {
-    if (parent.isValid())
-        return false;
-    bool fetch = m_dataLoader.backPosition() < m_dataLoader.totalCount();
+    bool fetch = !parent.isValid() && (m_dataLoader.backPosition() < m_dataLoader.totalCount());
     qDebug() << __FUNCTION__ << fetch;
     return fetch;
 }
@@ -105,6 +103,7 @@ void CoolListModel::prepend(const QList<CoolListItem> &list)
 
 void CoolListModel::insert(const CoolListItem &item, int position)
 {
+    qDebug() << __FUNCTION__ << "pos:" << position;
     int p = (position > count() - 1) ? (count() - 1) : position;
     beginInsertRows(QModelIndex(), p, p);
     m_list.insert(p, item);
@@ -121,8 +120,6 @@ void CoolListModel::remove(int position, int count)
     beginRemoveRows(QModelIndex(), position, position + count);
     m_list.remove(position, count);
     endRemoveRows();
-    int backPos = m_dataLoader.backPosition() - count - 1;
-    m_dataLoader.setBackPosition(backPos);
     emit countChanged();
 }
 
@@ -152,8 +149,10 @@ void CoolListModel::removeUnusedBackItems(int treshold, int count)
 {
     if (rowCount() > treshold)
     {
-        remove(rowCount() - count - 1, count);
-        m_dataLoader.setBackPosition(m_dataLoader.backPosition() - count);
+        int bPos = m_dataLoader.backPosition();
+        bPos -= count;
+        remove(rowCount() - count, count);
+        m_dataLoader.setBackPosition(bPos);
         qDebug() << __FUNCTION__ << "treshold:" << treshold << "count:" << count << "back pos:" << m_dataLoader.backPosition()
                  << "front pos:" << m_dataLoader.frontPosition();
     }

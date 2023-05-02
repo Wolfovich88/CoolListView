@@ -32,9 +32,16 @@ target_link_libraries(appCoolListView
     PRIVATE Qt6::Quick Qt6::Sql
 )
 #Generating database
-execute_process(COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/generator.py "${CMAKE_CURRENT_BINARY_DIR}/android/testdatabase.db")
+if (ANDROID)
+    message("Android building")
+    set(DB_PATH "${CMAKE_CURRENT_BINARY_DIR}/android/testdatabase.db")
+    set(ANDROID_PACKAGE_SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/android CACHE INTERNAL "")
+else()
+    message("Windows building")
+    set(DB_PATH "${CMAKE_CURRENT_BINARY_DIR}/testdatabase.db")
+endif()
 
-set(ANDROID_PACKAGE_SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/android CACHE INTERNAL "")
+execute_process(COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/generator.py "${DB_PATH}")
 
 message("PROJECT_SOURCE_DIR: " + ${PROJECT_SOURCE_DIR})
 

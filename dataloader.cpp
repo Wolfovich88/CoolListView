@@ -15,29 +15,12 @@ DataLoader::DataLoader(QObject *parent)
     // Create a database connection
     m_db = QSqlDatabase::addDatabase("QSQLITE");
     const QString dbPath = QDir::currentPath() + QDir::separator() + ::dbShortName;
-//    QFile file(dbPath);
-
-//    if (!file.open(QIODevice::ReadWrite)) {
-//        qDebug() << "Failed to open file for writing.";
-//        return;
-//    }
-//    file.close();
-//    QFile::setPermissions(dbPath, QFile::WriteUser | QFile::ReadUser);
 
     m_db.setDatabaseName(dbPath);
     refreshTotalCount();
-    if (m_totalCount == 0)
-    {
-        generateContent();
-        refreshTotalCount();
-    }
     m_backPosition = 0;
     m_frontPosition = 0;
-    qDebug() << "Loaded:" << m_db.databaseName() << m_db.lastError().text();
-    qDebug() << "Count:" << m_totalCount;
-
-    if (m_totalCount == 0)
-        emit error("Error! Can not load database items.");
+    qDebug() << "Loaded:" << m_db.databaseName() << "error:" << m_db.lastError().text();
 }
 
 QList<CoolListItem> DataLoader::loadBack(int count)
@@ -56,7 +39,11 @@ QList<CoolListItem> DataLoader::loadBack(int count)
         limit = m_totalCount - m_backPosition;
     }
 
-    QString queryContent = QString("SELECT * FROM entries LIMIT %1 OFFSET %2").arg(--limit).arg(offset);
+    QString queryContent = QString("SELECT * FROM entries LIMIT %1 OFFSET %2").arg(limit).arg(offset);
+
+    if (offset == 0) {
+        queryContent = QString("SELECT * FROM entries LIMIT %1").arg(limit);
+    }
 
     qDebug() << __FUNCTION__ << "Query:" << queryContent;
 
@@ -68,9 +55,10 @@ QList<CoolListItem> DataLoader::loadBack(int count)
         item.setNickName(query.value(1).toString());
         item.setMessageText(query.value(2).toString());
         items << item;
-        m_backPosition++;
+        ++m_backPosition;
     }
     // Close the database connection
+    qDebug() << "m_backPosition" << m_backPosition;
     m_db.close();
 
     return items;
@@ -94,6 +82,10 @@ QList<CoolListItem> DataLoader::loadFront(int count)
     }
 
     QString queryContent = QString("SELECT * FROM entries LIMIT %1 OFFSET %2").arg(limit).arg(offset);
+
+    if (offset == 0) {
+        queryContent = QString("SELECT * FROM entries LIMIT %1").arg(limit);
+    }
 
     qDebug() << "Query:" << queryContent;
 
@@ -154,6 +146,10 @@ void DataLoader::refreshTotalCount()
 
     // Print the count to the console
     qDebug() << "Total entries:" << m_totalCount;
+
+    if (m_totalCount == 0) {
+        emit error("Error! Database is empty");
+    }
 
     m_db.close();
 }
