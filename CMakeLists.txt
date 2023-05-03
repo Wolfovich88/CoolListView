@@ -51,7 +51,7 @@ install(TARGETS appCoolListView
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-set(ANDROID_EXTRA_PERMISSIONS
-    "android.permission.READ_EXTERNAL_STORAGE"
-    "android.permission.WRITE_EXTERNAL_STORAGE"
-)
+#set(ANDROID_EXTRA_PERMISSIONS
+#    "android.permission.READ_EXTERNAL_STORAGE"
+#    "android.permission.WRITE_EXTERNAL_STORAGE"
+#)

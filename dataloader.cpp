@@ -8,16 +8,16 @@
 #include "dataloader.h"
 
 namespace {
-const QLatin1String dbShortName ("/testdatabase.db");
+const QLatin1String dbShortName ("testdatabase.db");
 };
 
 DataLoader::DataLoader(QObject *parent)
     : QObject{parent}
 {
-    QString filePath = QStandardPaths::writableLocation( QStandardPaths::StandardLocation::AppLocalDataLocation );
-    QFile::setPermissions( filePath, QFile::WriteOwner | QFile::ReadOwner );
+    QString filePath = QStandardPaths::writableLocation( QStandardPaths::StandardLocation::DocumentsLocation );
+    QFile::setPermissions( filePath, QFile::WriteUser | QFile::WriteUser );
     filePath.append(::dbShortName);
-    qDebug() << "FilePath:" << filePath;
+    //qDebug() << "FilePath:" << filePath;
 
     if( QFile::exists( filePath ) )
         QFile::remove( filePath );
@@ -42,6 +42,7 @@ DataLoader::DataLoader(QObject *parent)
 
     }
     */
+
     // Create a database connection
     m_db = QSqlDatabase::addDatabase("QSQLITE");
     m_db.setDatabaseName(filePath);
