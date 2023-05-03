@@ -20,7 +20,6 @@ int CoolListModel::rowCount(const QModelIndex &parent) const
 
 bool CoolListModel::hasChildren(const QModelIndex &parent) const
 {
-    // FIXME: Implement me!
     return false;
 }
 

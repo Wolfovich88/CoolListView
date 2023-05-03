@@ -73,6 +73,9 @@ public:
      */
     static const QString getRandomString(int length);
 
+    /*!
+     * \brief onGenerateDb slot to run database content generation process in a thread
+     */\
     void onGenerateDb();
 
 signals:
@@ -82,7 +85,14 @@ signals:
      */
     void error(const QString &errorString);
 
+    /*!
+     * \brief generationFinished - signal to notify about ganaration finish
+     */
     void generationFinished();
+    /*!
+     * \brief generationProgress - signal to notify about generation progress
+     * \param progress in percents
+     */
     void generationProgress(int progress);
 
 private:

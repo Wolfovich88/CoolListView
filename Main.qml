@@ -48,8 +48,6 @@ Window {
     ListView {
         id: view
 
-        property real lastY: 0.0
-
         anchors.fill: parent
         model: coolListModel
         highlightFollowsCurrentItem: false
@@ -58,13 +56,10 @@ Window {
 
         onContentYChanged: {
             var contentIndex = indexAt(contentX, contentY)
-            var delta = lastY > contentY
-            //console.debug("ContentY: " + contentY + " index: " +  contentIndex + "delta: " + delta)
             if (contentIndex === 0 && coolListModel.canFetchMoreFront()) {
                 coolListModel.fetchMoreFront()
                 positionViewAtIndex(coolListModel.chunkSize, ListView.Beginning)
             }
-            lastY = contentY
         }
 
         delegate: Rectangle {
@@ -78,22 +73,25 @@ Window {
 
             Row {
                 id: contentRow
-                spacing: 20
 
+                spacing: 20
                 height: 30
 
                 Text {
                     id: msgIndexTxt
+
                     text: messageIndex ? messageIndex : ""
                 }
 
                 Text {
                     id: nickTxt
+
                     text: nickName ? nickName : ""
                 }
 
                 Text {
                     id: mgsTxt
+
                     text: messageText ? messageText : ""
                     wrapMode: Text.Wrap
                 }
@@ -190,6 +188,10 @@ Window {
                 editorLoader.active = false
                 errorScreenLoader.active = true
             }
+            else {
+                errorScreenLoader.active = false
+            }
+
         }
 
         function onGenerated() {

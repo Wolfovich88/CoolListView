@@ -14,10 +14,15 @@ const QLatin1String dbShortName ("testdatabase.db");
 DataLoader::DataLoader(QObject *parent)
     : QObject{parent}
 {
-    QString filePath = QStandardPaths::writableLocation( QStandardPaths::StandardLocation::DocumentsLocation );
-    QFile::setPermissions( filePath, QFile::WriteUser | QFile::WriteUser );
-    filePath.append(::dbShortName);
-    //qDebug() << "FilePath:" << filePath;
+    QString filePath(::dbShortName);
+#ifdef Q_OS_ANDROID
+    filePath = QStandardPaths::writableLocation( QStandardPaths::StandardLocation::DocumentsLocation );
+    QDir docDir(filePath);
+    docDir.cdUp(); //I have no idea why this stupid Android doesn't allow me write to the Documents
+    filePath = docDir.absolutePath();
+    filePath += QDir::separator() + ::dbShortName;
+#endif
+    qDebug() << "FilePath:" << filePath;
 
     if( QFile::exists( filePath ) )
         QFile::remove( filePath );
@@ -39,14 +44,12 @@ DataLoader::DataLoader(QObject *parent)
         }
 
         qDebug() << "Copy error:" << dfile.errorString();
-
     }
     */
 
-    // Create a database connection
     m_db = QSqlDatabase::addDatabase("QSQLITE");
     m_db.setDatabaseName(filePath);
-    //refreshTotalCount();
+    //refreshTotalCount(); //TODO: it's needed when we use external database
     m_backPosition = 0;
     m_frontPosition = 0;
 }
@@ -85,8 +88,6 @@ QList<CoolListItem> DataLoader::loadBack(int count)
         items << item;
         ++m_backPosition;
     }
-    // Close the database connection
-    qDebug() << "m_backPosition" << m_backPosition;
     m_db.close();
 
     return items;
@@ -100,8 +101,6 @@ QList<CoolListItem> DataLoader::loadFront(int count)
     }
     int offset(m_frontPosition - count);
     int limit(count);
-
-    qDebug() << "Position:" << m_frontPosition;
 
     if (m_frontPosition < count)
     {
@@ -159,20 +158,17 @@ void DataLoader::setFrontPosition(int pos)
 
 void DataLoader::refreshTotalCount()
 {
-    // Open the database
     if (!openDatabase()) {
         return;
     }
 
     QSqlQuery query("SELECT COUNT(*) FROM entries", m_db);
 
-    // Retrieve the result of the query
     m_totalCount = 0;
     if (query.next()) {
         m_totalCount = query.value(0).toInt();
     }
 
-    // Print the count to the console
     qDebug() << "Total entries:" << m_totalCount;
 
     if (m_totalCount == 0) {

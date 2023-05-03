@@ -1,10 +1,12 @@
 #ifndef COOLLISTITEM_H
 #define COOLLISTITEM_H
 
-
 #include <QObject>
 #include <QString>
 
+/*!
+ * \brief The CoolListItem class - implements item for the list model
+ */
 class CoolListItem
 {
 public:

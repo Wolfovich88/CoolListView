@@ -16,7 +16,7 @@ qt_add_executable(appCoolListView
 qt_add_qml_module(appCoolListView
     URI CoolListView
     VERSION 1.0
-    QML_FILES Main.qml CoolListView.qml Editor.qml
+    QML_FILES Main.qml Editor.qml
 )
 
 set_target_properties(appCoolListView PROPERTIES
@@ -30,17 +30,18 @@ set_target_properties(appCoolListView PROPERTIES
 target_link_libraries(appCoolListView
     PRIVATE Qt6::Quick Qt6::Sql Qt6::Concurrent
 )
-#Generating database
-if (ANDROID)
-    message("++++++ Android building +++++++++++++++++")
-    set(DB_PATH "${CMAKE_CURRENT_SOURCE_DIR}/android/assets/data/testdatabase.db")
-    set_property(TARGET appCoolListView APPEND PROPERTY
-        QT_ANDROID_PACKAGE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/android
-    )
-else()
-    message("--------- Non Android building -----------")
-    set(DB_PATH "${CMAKE_CURRENT_BINARY_DIR}/testdatabase.db")
-endif()
+
+#Generating database by python script
+#if (ANDROID)
+#    message("++++++ Android building +++++++++++++++++")
+#    set(DB_PATH "${CMAKE_CURRENT_SOURCE_DIR}/android/assets/data/testdatabase.db")
+#    set_property(TARGET appCoolListView APPEND PROPERTY
+#        QT_ANDROID_PACKAGE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/android
+#    )
+#else()
+#    message("--------- Non Android building -----------")
+#    set(DB_PATH "${CMAKE_CURRENT_BINARY_DIR}/testdatabase.db")
+#endif()
 
 #TODO: database is generated on startup
 #execute_process(COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/generator.py "${DB_PATH}")
