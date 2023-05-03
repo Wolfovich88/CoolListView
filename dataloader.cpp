@@ -3,24 +3,43 @@
 #include <QtSql/QSqlQuery>
 #include <QDir>
 #include <QRandomGenerator>
+#include <QtConcurrent>
+//#include <QStandardPaths>
 #include "dataloader.h"
 
 namespace {
-const QLatin1String dbShortName ("testdatabase.db");
+const QLatin1String dbShortName ("testdatabase2.db");
 };
 
 DataLoader::DataLoader(QObject *parent)
     : QObject{parent}
 {
+    /* Fuck this shit QTBUG-64103
+    QFile dfile("assets:/data/testdatabase.db");
+    QFileInfo info("assets:/data/testdatabase.db");
+    qDebug() << "++++ Asset exists:" << info.absoluteFilePath() << dfile.exists();
+    QString filePath = QStandardPaths::writableLocation( QStandardPaths::StandardLocation::AppLocalDataLocation );
+    filePath.append(::dbShortName);
+    qDebug() << "FilePath:" << filePath;
+    if (dfile.exists()) {
+        if( QFile::exists( filePath ) )
+            QFile::remove( filePath );
+
+        if( dfile.copy( filePath ) ) {
+            qDebug() << "CopyOK:";
+            QFile::setPermissions( filePath, QFile::WriteOwner | QFile::ReadOwner );
+        }
+
+        qDebug() << "Copy error:" << dfile.errorString();
+
+    }
+    */
     // Create a database connection
     m_db = QSqlDatabase::addDatabase("QSQLITE");
-    const QString dbPath = QDir::currentPath() + QDir::separator() + ::dbShortName;
-
-    m_db.setDatabaseName(dbPath);
-    refreshTotalCount();
+    m_db.setDatabaseName(::dbShortName);
+    //refreshTotalCount();
     m_backPosition = 0;
     m_frontPosition = 0;
-    qDebug() << "Loaded:" << m_db.databaseName() << "error:" << m_db.lastError().text();
 }
 
 QList<CoolListItem> DataLoader::loadBack(int count)
@@ -168,8 +187,17 @@ const QString DataLoader::getRandomString(int length)
     return result;
 }
 
+void DataLoader::onGenerateDb()
+{
+    QFuture<void> future = QtConcurrent::run([this]() {
+        generateContent();
+        emit generationFinished();
+    });
+}
+
 void DataLoader::generateContent()
 {
+    qDebug() << "Start generation:";
     if (!openDatabase())
     {
         return;
@@ -188,7 +216,21 @@ void DataLoader::generateContent()
         query.bindValue(":message", msg);
         query.exec();
     }
+
+    query.exec("SELECT COUNT(*) FROM entries");
+
+    if (query.next()) {
+        m_totalCount = query.value(0).toInt();
+    }
+
+    // Print the count to the console
+    qDebug() << "Total generated entries:" << m_totalCount;
+
+    if (m_totalCount == 0) {
+        emit error("Error! Generated database is empty");
+    }
     m_db.close();
+    qDebug() << "Generated:" << m_db.databaseName() << "error:" << m_db.lastError().text();
 }
 
 bool DataLoader::openDatabase()
@@ -201,5 +243,3 @@ bool DataLoader::openDatabase()
     }
     return true;
 }
-
-

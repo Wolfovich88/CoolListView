@@ -7,6 +7,7 @@ CoolListModel::CoolListModel(QObject *parent)
 {
     qRegisterMetaType<CoolListItem>();
     connect(&m_dataLoader, &DataLoader::error, this, &CoolListModel::error);
+    connect(&m_dataLoader, &DataLoader::generationFinished, this, &CoolListModel::onGenerationFinished);
 }
 
 int CoolListModel::rowCount(const QModelIndex &parent) const
@@ -189,6 +190,11 @@ void CoolListModel::fetchMoreFront()
     }
 }
 
+void CoolListModel::generateDb()
+{
+    m_dataLoader.onGenerateDb();
+}
+
 int CoolListModel::chunkSize() const
 {
     return m_chunkSize;
@@ -200,4 +206,10 @@ void CoolListModel::setChunkSize(int newChunkSize)
         return;
     m_chunkSize = newChunkSize;
     emit chunkSizeChanged();
+}
+
+void CoolListModel::onGenerationFinished()
+{
+    fetchMore(QModelIndex());
+    emit generated();
 }

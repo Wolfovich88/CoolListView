@@ -6,6 +6,7 @@
 #include <QAbstractListModel>
 #include <QList>
 #include "dataloader.h"
+#include "qthread.h"
 
 /*!
  * \brief The CoolListModel class - implements a ListModel with dynamically loaded content from DataLoader
@@ -67,6 +68,8 @@ public:
 
     Q_INVOKABLE void fetchMoreFront();
 
+    Q_INVOKABLE void generateDb();
+
     int chunkSize() const;
 
     void setChunkSize(int newChunkSize);
@@ -75,10 +78,14 @@ signals:
     void countChanged();
     void chunkSizeChanged();
     void error(const QString &error);
+    void generated();
 
 private:
+    void onGenerationFinished();
+
     QList<CoolListItem> m_list;
     DataLoader m_dataLoader;
+    QThread m_thread;
     int m_chunkSize;
 };
 

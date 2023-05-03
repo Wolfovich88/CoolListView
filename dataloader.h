@@ -73,12 +73,16 @@ public:
      */
     static const QString getRandomString(int length);
 
+    void onGenerateDb();
+
 signals:
     /*!
      * \brief error - notifies about error
      * \param errorString - error text
      */
     void error(const QString &errorString);
+
+    void generationFinished();
 
 private:
 

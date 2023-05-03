@@ -1,10 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
 
 project(CoolListView VERSION 0.1 LANGUAGES CXX)
-
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 6.4 REQUIRED COMPONENTS Quick Sql)
+find_package(Qt6 6.4 REQUIRED COMPONENTS Quick Sql Concurrent)
 find_package(PythonInterp)
 find_package(Python)
 
@@ -29,13 +28,15 @@ set_target_properties(appCoolListView PROPERTIES
 )
 
 target_link_libraries(appCoolListView
-    PRIVATE Qt6::Quick Qt6::Sql
+    PRIVATE Qt6::Quick Qt6::Sql Qt6::Concurrent
 )
 #Generating database
 if (ANDROID)
     message("++++++ Android building +++++++++++++++++")
-    set(DB_PATH "${CMAKE_CURRENT_BINARY_DIR}/android/testdatabase.db")
-    set(ANDROID_PACKAGE_SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/android CACHE INTERNAL "")
+    set(DB_PATH "${CMAKE_CURRENT_SOURCE_DIR}/android/assets/data/testdatabase.db")
+    set_property(TARGET appCoolListView APPEND PROPERTY
+        QT_ANDROID_PACKAGE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/android
+    )
 else()
     message("--------- Non Android building -----------")
     set(DB_PATH "${CMAKE_CURRENT_BINARY_DIR}/testdatabase.db")

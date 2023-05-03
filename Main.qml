@@ -135,6 +135,29 @@ Window {
         }
     }
 
+    Loader {
+        id: waitScreenLoader
+
+        anchors.fill: parent
+        active: coolListModel.count === 0 && errorScreenLoader.errorString === ""
+        sourceComponent: Rectangle {
+            color: "yellow"
+
+            Text {
+                anchors.centerIn: parent
+                text: "Generating data...."
+                font.pixelSize: 20
+            }
+        }
+
+        onStatusChanged: {
+            if (status === Loader.Ready) {
+                coolListModel.generateDb()
+
+            }
+        }
+    }
+
     Connections {
         target: coolListModel
 
@@ -144,6 +167,10 @@ Window {
                 editorLoader.active = false
                 errorScreenLoader.active = true
             }
+        }
+
+        function onGenerated() {
+            waitScreenLoader.active = false
         }
     }
 }
