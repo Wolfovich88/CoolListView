@@ -8,6 +8,7 @@ CoolListModel::CoolListModel(QObject *parent)
     qRegisterMetaType<CoolListItem>();
     connect(&m_dataLoader, &DataLoader::error, this, &CoolListModel::error);
     connect(&m_dataLoader, &DataLoader::generationFinished, this, &CoolListModel::onGenerationFinished);
+    connect(&m_dataLoader, &DataLoader::generationProgress, this, &CoolListModel::generationProgress);
 }
 
 int CoolListModel::rowCount(const QModelIndex &parent) const

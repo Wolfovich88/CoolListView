@@ -42,7 +42,8 @@ else()
     set(DB_PATH "${CMAKE_CURRENT_BINARY_DIR}/testdatabase.db")
 endif()
 
-execute_process(COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/generator.py "${DB_PATH}")
+#TODO: database is generated on startup
+#execute_process(COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/generator.py "${DB_PATH}")
 
 message("PROJECT_SOURCE_DIR: " + ${PROJECT_SOURCE_DIR})
 

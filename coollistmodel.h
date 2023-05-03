@@ -79,6 +79,7 @@ signals:
     void chunkSizeChanged();
     void error(const QString &error);
     void generated();
+    void generationProgress(int progress);
 
 private:
     void onGenerationFinished();

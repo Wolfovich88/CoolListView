@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Window
+import QtQuick.Controls 2.15
 
 Window {
     id: root
@@ -35,8 +36,11 @@ Window {
             Text {
                 id: errorTxt
 
-                font.pixelSize: 20
                 anchors.centerIn: parent
+                width: parent.width - font.pixelSize
+                font.pixelSize: 20
+                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                horizontalAlignment: Text.AlignHCenter
             }
         }
     }
@@ -144,16 +148,35 @@ Window {
             color: "yellow"
 
             Text {
+                id: waitText
+
                 anchors.centerIn: parent
                 text: "Generating data...."
                 font.pixelSize: 20
+            }
+
+            ProgressBar {
+                id: progressBar
+
+                from: 0.0
+                to: 100.0
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: waitText.bottom
+                anchors.margins: 10
+
+                Connections {
+                    target: coolListModel
+                    function onGenerationProgress(progress) {
+                        progressBar.value = progress
+                    }
+                }
             }
         }
 
         onStatusChanged: {
             if (status === Loader.Ready) {
                 coolListModel.generateDb()
-
             }
         }
     }

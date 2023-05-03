@@ -4,17 +4,25 @@
 #include <QDir>
 #include <QRandomGenerator>
 #include <QtConcurrent>
-//#include <QStandardPaths>
+#include <QStandardPaths>
 #include "dataloader.h"
 
 namespace {
-const QLatin1String dbShortName ("testdatabase2.db");
+const QLatin1String dbShortName ("/testdatabase.db");
 };
 
 DataLoader::DataLoader(QObject *parent)
     : QObject{parent}
 {
-    /* Fuck this shit QTBUG-64103
+    QString filePath = QStandardPaths::writableLocation( QStandardPaths::StandardLocation::AppLocalDataLocation );
+    QFile::setPermissions( filePath, QFile::WriteOwner | QFile::ReadOwner );
+    filePath.append(::dbShortName);
+    qDebug() << "FilePath:" << filePath;
+
+    if( QFile::exists( filePath ) )
+        QFile::remove( filePath );
+
+    /* Fuck this crap QTBUG-64103 is reproduced again
     QFile dfile("assets:/data/testdatabase.db");
     QFileInfo info("assets:/data/testdatabase.db");
     qDebug() << "++++ Asset exists:" << info.absoluteFilePath() << dfile.exists();
@@ -36,7 +44,7 @@ DataLoader::DataLoader(QObject *parent)
     */
     // Create a database connection
     m_db = QSqlDatabase::addDatabase("QSQLITE");
-    m_db.setDatabaseName(::dbShortName);
+    m_db.setDatabaseName(filePath);
     //refreshTotalCount();
     m_backPosition = 0;
     m_frontPosition = 0;
@@ -215,6 +223,10 @@ void DataLoader::generateContent()
         query.bindValue(":name", name);
         query.bindValue(":message", msg);
         query.exec();
+
+        if (i%100 == 0) {
+            emit generationProgress(i/100);
+        }
     }
 
     query.exec("SELECT COUNT(*) FROM entries");

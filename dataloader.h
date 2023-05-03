@@ -83,6 +83,7 @@ signals:
     void error(const QString &errorString);
 
     void generationFinished();
+    void generationProgress(int progress);
 
 private:
 
