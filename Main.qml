@@ -48,7 +48,9 @@ Window {
     ListView {
         id: view
 
+        readonly property int listItemHeight: 30
         property int prevContentY: -1
+
         anchors.fill: parent
         model: coolListModel
         highlightFollowsCurrentItem: false
@@ -56,13 +58,13 @@ Window {
         focus: true
 
         onContentYChanged: {
-            var backwardScroll = contentY < prevContentY
+            var scrollUp = prevContentY > contentY
             var contentIndex = indexAt(contentX, contentY)
-            if (contentIndex === 0 && coolListModel.canFetchMoreFront()) {
+            if (scrollUp && contentIndex === listItemHeight && coolListModel.canFetchMoreFront()) {
                 coolListModel.fetchMoreFront()
-                positionViewAtIndex(coolListModel.chunkSize, ListView.Beginning)
+                //positionViewAtIndex(coolListModel.chunkSize, ListView.Beginning)
             }
-            prevContentY = contentY;
+            prevContentY = contentY
         }
 
         delegate: Rectangle {
@@ -78,7 +80,7 @@ Window {
                 id: contentRow
 
                 spacing: 20
-                height: 30
+                height: view.listItemHeight
 
                 Text {
                     id: msgIndexTxt
