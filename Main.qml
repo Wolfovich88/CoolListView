@@ -48,6 +48,7 @@ Window {
     ListView {
         id: view
 
+        property int prevContentY: -1
         anchors.fill: parent
         model: coolListModel
         highlightFollowsCurrentItem: false
@@ -55,11 +56,13 @@ Window {
         focus: true
 
         onContentYChanged: {
+            var backwardScroll = contentY < prevContentY
             var contentIndex = indexAt(contentX, contentY)
             if (contentIndex === 0 && coolListModel.canFetchMoreFront()) {
                 coolListModel.fetchMoreFront()
                 positionViewAtIndex(coolListModel.chunkSize, ListView.Beginning)
             }
+            prevContentY = contentY;
         }
 
         delegate: Rectangle {
@@ -173,8 +176,11 @@ Window {
         }
 
         onStatusChanged: {
-            if (status === Loader.Ready) {
+            if (status === Loader.Ready && Qt.platform.os === "android") {
                 coolListModel.generateDb()
+            }
+            else {
+                waitScreenLoader.active = false
             }
         }
     }

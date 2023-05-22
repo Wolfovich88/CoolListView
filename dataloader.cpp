@@ -21,11 +21,12 @@ DataLoader::DataLoader(QObject *parent)
     docDir.cdUp(); //I have no idea why this stupid Android doesn't allow me write to the Documents
     filePath = docDir.absolutePath();
     filePath += QDir::separator() + ::dbShortName;
-#endif
-    qDebug() << "FilePath:" << filePath;
-
     if( QFile::exists( filePath ) )
         QFile::remove( filePath );
+#else
+    filePath = QDir::currentPath() + QDir::separator() + ::dbShortName;
+#endif
+    qDebug() << "FilePath:" << filePath;
 
     /* Fuck this crap QTBUG-64103 is reproduced again
     QFile dfile("assets:/data/testdatabase.db");
@@ -49,7 +50,9 @@ DataLoader::DataLoader(QObject *parent)
 
     m_db = QSqlDatabase::addDatabase("QSQLITE");
     m_db.setDatabaseName(filePath);
-    //refreshTotalCount(); //TODO: it's needed when we use external database
+#ifndef Q_OS_ANDROID
+    refreshTotalCount(); //TODO: it's needed when we use external database
+#endif
     m_backPosition = 0;
     m_frontPosition = 0;
 }
@@ -76,8 +79,6 @@ QList<CoolListItem> DataLoader::loadBack(int count)
         queryContent = QString("SELECT * FROM entries LIMIT %1").arg(limit);
     }
 
-    qDebug() << __FUNCTION__ << "Query:" << queryContent;
-
     QSqlQuery query(queryContent, m_db);
 
     CoolListItem item;
@@ -89,6 +90,9 @@ QList<CoolListItem> DataLoader::loadBack(int count)
         ++m_backPosition;
     }
     m_db.close();
+
+    qDebug() << __FUNCTION__ << "Query:" << queryContent << "backPos:"
+             << m_backPosition << "frontPos:" << m_frontPosition;
 
     return items;
 }

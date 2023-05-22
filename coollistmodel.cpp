@@ -33,7 +33,6 @@ bool CoolListModel::canFetchMore(const QModelIndex &parent) const
 void CoolListModel::fetchMore(const QModelIndex &parent)
 {
     auto loadedList = m_dataLoader.loadBack(chunkSize());
-    qDebug() << __FUNCTION__ << loadedList.size();
     append(loadedList);
     removeUnusedFrontItems(2 * chunkSize(), chunkSize()); //Unload front elements
 }
@@ -81,16 +80,22 @@ void CoolListModel::append(const CoolListItem &item)
 
 void CoolListModel::append(const QList<CoolListItem> &list)
 {
-    beginInsertRows(QModelIndex(), count(), count() + list.size());
+    int firstPos = rowCount();
+    int lastPos = firstPos + list.size(); // -1
+    beginInsertRows(QModelIndex(), firstPos, lastPos);
     m_list.append(list);
     endInsertRows();
     emit countChanged();
-    qDebug() << "Append" << list.size() << "items" << "total size:" << rowCount();
+    qDebug() << "Append" << list.size() << "items"
+             << "first:" << firstPos << "last:" << lastPos
+             << "total size:" << rowCount();
 }
 
 void CoolListModel::prepend(const QList<CoolListItem> &list)
 {
-    beginInsertRows(QModelIndex(), 0, list.size());
+    int first = 0;
+    int last = list.size();
+    beginInsertRows(QModelIndex(), first, last);
     auto iter = list.end() - 1;
     while (iter != list.begin() - 1)
     {
@@ -99,8 +104,9 @@ void CoolListModel::prepend(const QList<CoolListItem> &list)
     }
     endInsertRows();
     emit countChanged();
-    qDebug() << "Prepend" << list.size() << "items" << "total size:" << rowCount();
-}
+    qDebug() << "Prepend" << list.size() << "items"
+             << "first:" << first << "last:" << last
+             << "total size:" << rowCount();}
 
 void CoolListModel::insert(const CoolListItem &item, int position)
 {
@@ -116,9 +122,13 @@ void CoolListModel::insert(const CoolListItem &item, int position)
 
 void CoolListModel::remove(int position, int count)
 {
-    if (position + count > rowCount() - 1)
+    int first = position;
+    int last = position + count;
+
+    if (last > rowCount() - 1)
         return;
-    beginRemoveRows(QModelIndex(), position, position + count);
+
+    beginRemoveRows(QModelIndex(), first, last);
     m_list.remove(position, count);
     endRemoveRows();
     emit countChanged();
@@ -139,10 +149,10 @@ void CoolListModel::removeUnusedFrontItems(int treshold, int count)
     {
         remove(0, count);
         int fPos = m_dataLoader.frontPosition();
-        fPos += count;
-        m_dataLoader.setFrontPosition(fPos);
+        int newfPos = fPos + count;
+        m_dataLoader.setFrontPosition(newfPos);
         qDebug() << __FUNCTION__ << "treshold:" << treshold << "count:" << count << "back pos:" << m_dataLoader.backPosition()
-                 << "front pos:" << m_dataLoader.frontPosition();
+                 << "old front pos:" << fPos << "new front pos:" << newfPos;
     }
 }
 
