@@ -129,6 +129,10 @@ public:
      */
     void removeUnusedBackItems(int treshold, int count);
 
+    void removeFrontItems(int count);
+
+    void removeBackItems(int count);
+
 signals:
     //! Notifier for count property
     void countChanged();

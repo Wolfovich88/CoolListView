@@ -48,7 +48,8 @@ Window {
     ListView {
         id: view
 
-        readonly property int listItemHeight: 30
+        readonly property int loadFrontTreshold: 30
+
         property int prevContentY: -1
 
         anchors.fill: parent
@@ -60,7 +61,7 @@ Window {
         onContentYChanged: {
             var scrollUp = prevContentY > contentY
             var contentIndex = indexAt(contentX, contentY)
-            if (scrollUp && contentIndex === listItemHeight && coolListModel.canFetchMoreFront()) {
+            if (scrollUp && contentIndex === loadFrontTreshold && coolListModel.canFetchMoreFront()) {
                 coolListModel.fetchMoreFront()
                 //positionViewAtIndex(coolListModel.chunkSize, ListView.Beginning)
             }
@@ -80,7 +81,7 @@ Window {
                 id: contentRow
 
                 spacing: 20
-                height: view.listItemHeight
+                height: 30
 
                 Text {
                     id: msgIndexTxt
