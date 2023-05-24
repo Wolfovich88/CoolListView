@@ -32,19 +32,19 @@ target_link_libraries(appCoolListView
 )
 
 #Generating database by python script
-#if (ANDROID)
-#    message("++++++ Android building +++++++++++++++++")
-#    set(DB_PATH "${CMAKE_CURRENT_SOURCE_DIR}/android/assets/data/testdatabase.db")
-#    set_property(TARGET appCoolListView APPEND PROPERTY
-#        QT_ANDROID_PACKAGE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/android
-#    )
-#else()
-#    message("--------- Non Android building -----------")
-#    set(DB_PATH "${CMAKE_CURRENT_BINARY_DIR}/testdatabase.db")
-#endif()
+if (ANDROID)
+    message("++++++ Android building +++++++++++++++++")
+    set(DB_PATH "${CMAKE_CURRENT_SOURCE_DIR}/android/assets/data/testdatabase.db")
+    set_property(TARGET appCoolListView APPEND PROPERTY
+        QT_ANDROID_PACKAGE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/android
+    )
+else()
+    message("--------- Non Android building -----------")
+    set(DB_PATH "${CMAKE_CURRENT_BINARY_DIR}/testdatabase.db")
+endif()
 
 #TODO: database is generated on startup
-#execute_process(COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/generator.py "${DB_PATH}")
+execute_process(COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/generator.py "${DB_PATH}")
 
 message("PROJECT_SOURCE_DIR: " + ${PROJECT_SOURCE_DIR})
 

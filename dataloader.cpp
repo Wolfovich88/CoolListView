@@ -12,7 +12,7 @@ const QLatin1String dbShortName ("testdatabase.db");
 };
 
 DataLoader::DataLoader(QObject *parent)
-    : QObject{parent}
+    : QObject{parent}, m_totalCount(0)
 {
     QString filePath(::dbShortName);
 #ifdef Q_OS_ANDROID
@@ -21,11 +21,10 @@ DataLoader::DataLoader(QObject *parent)
     docDir.cdUp(); //I have no idea why this stupid Android doesn't allow me write to the Documents
     filePath = docDir.absolutePath();
     filePath += QDir::separator() + ::dbShortName;
+#else
+    filePath = QDir::currentPath() + QDir::separator() + ::dbShortName;
 #endif
     qDebug() << "FilePath:" << filePath;
-
-    if( QFile::exists( filePath ) )
-        QFile::remove( filePath );
 
     /* Fuck this crap QTBUG-64103 is reproduced again
     QFile dfile("assets:/data/testdatabase.db");
@@ -49,7 +48,15 @@ DataLoader::DataLoader(QObject *parent)
 
     m_db = QSqlDatabase::addDatabase("QSQLITE");
     m_db.setDatabaseName(filePath);
-    //refreshTotalCount(); //TODO: it's needed when we use external database
+
+    if (QFile::exists(filePath))
+    {
+        refreshTotalCount();
+    }
+    if (m_totalCount == 0)
+    {
+        generateContentInThread();
+    }
     m_backPosition = 0;
     m_frontPosition = 0;
 }
@@ -76,8 +83,6 @@ QList<CoolListItem> DataLoader::loadBack(int count)
         queryContent = QString("SELECT * FROM entries LIMIT %1").arg(limit);
     }
 
-    qDebug() << __FUNCTION__ << "Query:" << queryContent;
-
     QSqlQuery query(queryContent, m_db);
 
     CoolListItem item;
@@ -89,6 +94,9 @@ QList<CoolListItem> DataLoader::loadBack(int count)
         ++m_backPosition;
     }
     m_db.close();
+
+    qDebug() << __FUNCTION__ << "Query:" << queryContent << "backPos:"
+             << m_backPosition << "frontPos:" << m_frontPosition;
 
     return items;
 }
@@ -192,12 +200,53 @@ const QString DataLoader::getRandomString(int length)
     return result;
 }
 
-void DataLoader::onGenerateDb()
+void DataLoader::generateContentInThread()
 {
     QFuture<void> future = QtConcurrent::run([this]() {
         generateContent();
         emit generationFinished();
     });
+}
+
+QList<CoolListItem> DataLoader::loadRandom(int count, int position)
+{
+    QList<CoolListItem> items;
+    if (!openDatabase()) {
+        return items;
+    }
+
+    int tmpBackPosition(position);
+    int tmpFrontPosition(position);
+    int offset(position);
+    int limit(count);
+    QString queryContent = QString("SELECT * FROM entries LIMIT %1 OFFSET %2").arg(limit).arg(offset);
+
+    if (offset == 0) {
+        queryContent = QString("SELECT * FROM entries LIMIT %1").arg(limit);
+    }
+
+    QSqlQuery query(queryContent, m_db);
+
+    CoolListItem item;
+    while (query.next()) {
+        item.setMessageIndex(query.value(0).toInt());
+        item.setNickName(query.value(1).toString());
+        item.setMessageText(query.value(2).toString());
+        items << item;
+        ++tmpBackPosition;
+    }
+
+    if (tmpBackPosition != tmpFrontPosition)
+    {
+        m_backPosition = tmpBackPosition;
+        m_frontPosition = tmpFrontPosition;
+    }
+    m_db.close();
+
+    qDebug() << __FUNCTION__ << "Query:" << queryContent << "backPos:"
+             << m_backPosition << "frontPos:" << m_frontPosition;
+
+    return items;
 }
 
 void DataLoader::generateContent()
@@ -207,6 +256,7 @@ void DataLoader::generateContent()
     {
         return;
     }
+    emit generationStarted();
     QSqlQuery query(m_db);
     query.exec("CREATE TABLE entries (id INTEGER PRIMARY KEY, name TEXT, message TEXT)");
     for(int i = 0; i < 10000; i++)
@@ -232,14 +282,11 @@ void DataLoader::generateContent()
         m_totalCount = query.value(0).toInt();
     }
 
-    // Print the count to the console
-    qDebug() << "Total generated entries:" << m_totalCount;
-
     if (m_totalCount == 0) {
         emit error("Error! Generated database is empty");
     }
     m_db.close();
-    qDebug() << "Generated:" << m_db.databaseName() << "error:" << m_db.lastError().text();
+    qDebug() << "Generated:" << m_db.databaseName() << m_totalCount << "items." << "error:" << m_db.lastError().text();
 }
 
 bool DataLoader::openDatabase()

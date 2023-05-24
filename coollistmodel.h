@@ -116,6 +116,25 @@ public:
     Q_INVOKABLE void generateDb();
 
     /*!
+     * \brief loadChunkWithItem load items chunk with itemId position in the middle (from itemId-chuckSize() to itemId+chuckSize())
+     * \param itemId - middle chunk position
+     */
+    Q_INVOKABLE void loadChunkWithItem(int itemId);
+
+    /*!
+     * \brief totalCount - get database items count
+     * \return database items count
+     */
+    Q_INVOKABLE int totalCount() const;
+
+    /*!
+     * \brief itemIndexById - find item index in the model by given messageIndex
+     * \param itemId - messageIndex
+     * \return message index if item was found, othervise return -1
+     */
+    Q_INVOKABLE int itemIndexById(int messageIndex) const;
+
+    /*!
      * \brief removeUnusedFrontItems - removes count elements from the beginning of the model list
      * \param treshold - rowCount value after which front elements can be removed
      * \param count - number of removed elements
@@ -129,19 +148,29 @@ public:
      */
     void removeUnusedBackItems(int treshold, int count);
 
+    /*!
+     * \brief removeFrontItems - wrapper to remove chunkSize() items in front of the model
+     * \param count - number of items to be removed
+     */
+    void removeFrontItems(int count);
+
+    /*!
+     * \brief removeBackItems - wrapper to remove chunkSize() items in back of the model
+     * \param count - number of items to be removed
+     */
+    void removeBackItems(int count);
+
 signals:
     //! Notifier for count property
     void countChanged();
-
     //! Notifier for chunk size property
     void chunkSizeChanged();
-
     //! Notifies about error that is displayed on the error screen
     void error(const QString &error);
-
     //! Notifies about database content generation is finished
-    void generated();
-
+    void generationFinished();
+    //! Notifies about database content generation is started
+    void generationStarted();
     //! Notifies about database content generation progress is changed
     void generationProgress(int progress);
 

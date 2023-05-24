@@ -48,6 +48,10 @@ Window {
     ListView {
         id: view
 
+        readonly property int loadFrontTreshold: 30
+
+        property int prevContentY: -1
+
         anchors.fill: parent
         model: coolListModel
         highlightFollowsCurrentItem: false
@@ -55,11 +59,13 @@ Window {
         focus: true
 
         onContentYChanged: {
+            var scrollUp = prevContentY > contentY
             var contentIndex = indexAt(contentX, contentY)
-            if (contentIndex === 0 && coolListModel.canFetchMoreFront()) {
+            if (scrollUp && contentIndex === loadFrontTreshold && coolListModel.canFetchMoreFront()) {
                 coolListModel.fetchMoreFront()
-                positionViewAtIndex(coolListModel.chunkSize, ListView.Beginning)
+                //positionViewAtIndex(coolListModel.chunkSize, ListView.Beginning)
             }
+            prevContentY = contentY
         }
 
         delegate: Rectangle {
@@ -120,6 +126,22 @@ Window {
             itemIndex: view.currentIndex
 
             onClose: editorLoader.active = false
+
+            onGoToItem:  function(itemId) {
+                if (!openPositionById(itemId)) {
+                    coolListModel.loadChunkWithItem(itemId)
+                    openPositionById(itemId)
+                }
+            }
+
+            function openPositionById(id) {
+                var itemIdIndex = coolListModel.itemIndexById(id);
+                if (itemIdIndex >= 0) {
+                    view.positionViewAtIndex(itemIdIndex, ListView.Beginning)
+                    return true
+                }
+                return false
+            }
         }
     }
 
@@ -141,7 +163,7 @@ Window {
         id: waitScreenLoader
 
         anchors.fill: parent
-        active: coolListModel.count === 0 && errorScreenLoader.errorString === ""
+        active: coolListModel && coolListModel.count === 0 && errorScreenLoader.errorString === ""
         sourceComponent: Rectangle {
             color: "yellow"
 
@@ -171,12 +193,6 @@ Window {
                 }
             }
         }
-
-        onStatusChanged: {
-            if (status === Loader.Ready) {
-                coolListModel.generateDb()
-            }
-        }
     }
 
     Connections {
@@ -186,15 +202,19 @@ Window {
             if (errorString !== "") {
                 errorScreenLoader.errorString = errorString
                 editorLoader.active = false
+                waitScreenLoader.active = false
                 errorScreenLoader.active = true
             }
             else {
                 errorScreenLoader.active = false
             }
-
         }
 
-        function onGenerated() {
+        function onGenerationStarted() {
+            waitScreenLoader.active = true
+        }
+
+        function onGenerationFinished() {
             waitScreenLoader.active = false
         }
     }
