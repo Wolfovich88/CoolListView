@@ -147,7 +147,7 @@ Window {
         id: waitScreenLoader
 
         anchors.fill: parent
-        active: coolListModel.count === 0 && errorScreenLoader.errorString === ""
+        active: coolListModel && coolListModel.count === 0 && errorScreenLoader.errorString === ""
         sourceComponent: Rectangle {
             color: "yellow"
 
@@ -177,15 +177,6 @@ Window {
                 }
             }
         }
-
-        onStatusChanged: {
-            if (status === Loader.Ready && Qt.platform.os === "android") {
-                coolListModel.generateDb()
-            }
-            else {
-                waitScreenLoader.active = false
-            }
-        }
     }
 
     Connections {
@@ -195,15 +186,19 @@ Window {
             if (errorString !== "") {
                 errorScreenLoader.errorString = errorString
                 editorLoader.active = false
+                waitScreenLoader.active = false
                 errorScreenLoader.active = true
             }
             else {
                 errorScreenLoader.active = false
             }
-
         }
 
-        function onGenerated() {
+        function onGenerationStarted() {
+            waitScreenLoader.active = true
+        }
+
+        function onGenerationFinished() {
             waitScreenLoader.active = false
         }
     }

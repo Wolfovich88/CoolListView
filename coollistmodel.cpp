@@ -9,6 +9,7 @@ CoolListModel::CoolListModel(QObject *parent)
     connect(&m_dataLoader, &DataLoader::error, this, &CoolListModel::error);
     connect(&m_dataLoader, &DataLoader::generationFinished, this, &CoolListModel::onGenerationFinished);
     connect(&m_dataLoader, &DataLoader::generationProgress, this, &CoolListModel::generationProgress);
+    connect(&m_dataLoader, &DataLoader::generationStarted, this, &CoolListModel::generationStarted);
 }
 
 int CoolListModel::rowCount(const QModelIndex &parent) const
@@ -233,7 +234,7 @@ void CoolListModel::fetchMoreFront()
 
 void CoolListModel::generateDb()
 {
-    m_dataLoader.onGenerateDb();
+    m_dataLoader.generateContentInThread();
 }
 
 int CoolListModel::chunkSize() const
@@ -252,5 +253,5 @@ void CoolListModel::setChunkSize(int newChunkSize)
 void CoolListModel::onGenerationFinished()
 {
     fetchMore(QModelIndex());
-    emit generated();
+    emit generationFinished();
 }

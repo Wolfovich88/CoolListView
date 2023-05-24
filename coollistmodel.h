@@ -144,8 +144,9 @@ signals:
     void error(const QString &error);
 
     //! Notifies about database content generation is finished
-    void generated();
-
+    void generationFinished();
+    //! Notifies about database content generation is started
+    void generationStarted();
     //! Notifies about database content generation progress is changed
     void generationProgress(int progress);
 

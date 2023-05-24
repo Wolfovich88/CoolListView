@@ -12,7 +12,7 @@ const QLatin1String dbShortName ("testdatabase.db");
 };
 
 DataLoader::DataLoader(QObject *parent)
-    : QObject{parent}
+    : QObject{parent}, m_totalCount(0)
 {
     QString filePath(::dbShortName);
 #ifdef Q_OS_ANDROID
@@ -21,8 +21,6 @@ DataLoader::DataLoader(QObject *parent)
     docDir.cdUp(); //I have no idea why this stupid Android doesn't allow me write to the Documents
     filePath = docDir.absolutePath();
     filePath += QDir::separator() + ::dbShortName;
-    if( QFile::exists( filePath ) )
-        QFile::remove( filePath );
 #else
     filePath = QDir::currentPath() + QDir::separator() + ::dbShortName;
 #endif
@@ -50,9 +48,15 @@ DataLoader::DataLoader(QObject *parent)
 
     m_db = QSqlDatabase::addDatabase("QSQLITE");
     m_db.setDatabaseName(filePath);
-#ifndef Q_OS_ANDROID
-    refreshTotalCount(); //TODO: it's needed when we use external database
-#endif
+
+    if (QFile::exists(filePath))
+    {
+        refreshTotalCount();
+    }
+    if (m_totalCount == 0)
+    {
+        generateContentInThread();
+    }
     m_backPosition = 0;
     m_frontPosition = 0;
 }
@@ -196,7 +200,7 @@ const QString DataLoader::getRandomString(int length)
     return result;
 }
 
-void DataLoader::onGenerateDb()
+void DataLoader::generateContentInThread()
 {
     QFuture<void> future = QtConcurrent::run([this]() {
         generateContent();
@@ -211,6 +215,7 @@ void DataLoader::generateContent()
     {
         return;
     }
+    emit generationStarted();
     QSqlQuery query(m_db);
     query.exec("CREATE TABLE entries (id INTEGER PRIMARY KEY, name TEXT, message TEXT)");
     for(int i = 0; i < 10000; i++)
@@ -236,14 +241,11 @@ void DataLoader::generateContent()
         m_totalCount = query.value(0).toInt();
     }
 
-    // Print the count to the console
-    qDebug() << "Total generated entries:" << m_totalCount;
-
     if (m_totalCount == 0) {
         emit error("Error! Generated database is empty");
     }
     m_db.close();
-    qDebug() << "Generated:" << m_db.databaseName() << "error:" << m_db.lastError().text();
+    qDebug() << "Generated:" << m_db.databaseName() << m_totalCount << "items." << "error:" << m_db.lastError().text();
 }
 
 bool DataLoader::openDatabase()

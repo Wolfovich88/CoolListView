@@ -76,7 +76,7 @@ public:
     /*!
      * \brief onGenerateDb slot to run database content generation process in a thread
      */\
-    void onGenerateDb();
+        void generateContentInThread();
 
 signals:
     /*!
@@ -84,9 +84,12 @@ signals:
      * \param errorString - error text
      */
     void error(const QString &errorString);
-
     /*!
-     * \brief generationFinished - signal to notify about ganaration finish
+     * \brief generationStarted - signal to notify about genaration start
+     */
+    void generationStarted();
+    /*!
+     * \brief generationFinished - signal to notify about genaration finish
      */
     void generationFinished();
     /*!
