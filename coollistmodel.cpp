@@ -107,7 +107,7 @@ void CoolListModel::prepend(const QList<CoolListItem> &list)
     emit countChanged();
     qDebug() << "Prepend" << list.size() << "items"
              << "first:" << first << "last:" << last
-             << "total size:" << rowCount();}
+             << "rowCount:" << rowCount();}
 
 void CoolListModel::insert(const CoolListItem &item, int position)
 {
@@ -221,7 +221,7 @@ bool CoolListModel::canFetchMoreFront()
     return fetch;
 }
 
-void CoolListModel::fetchMoreFront()
+bool CoolListModel::fetchMoreFront()
 {
     if (canFetchMoreFront())
     {
@@ -229,7 +229,9 @@ void CoolListModel::fetchMoreFront()
         qDebug() << __FUNCTION__ << loadedList.size();
         prepend(loadedList);
         removeUnusedBackItems(2 * chunkSize(), chunkSize()); //Unload back elements
+        return true;
     }
+    return false;
 }
 
 void CoolListModel::generateDb()

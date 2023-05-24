@@ -108,7 +108,7 @@ public:
     /*!
      * \brief fetchMoreFront - load chuck items from the database and puts it to the front of model list in backward order
      */
-    Q_INVOKABLE void fetchMoreFront();
+    Q_INVOKABLE bool fetchMoreFront();
 
     /*!
      * \brief generateDb - calls database content generation

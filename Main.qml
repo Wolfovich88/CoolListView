@@ -48,9 +48,10 @@ Window {
     ListView {
         id: view
 
-        readonly property int loadFrontTreshold: 30
+        readonly property int treshold: 50
 
         property int prevContentY: -1
+        property bool fetched: false
 
         anchors.fill: parent
         model: coolListModel
@@ -61,10 +62,15 @@ Window {
         onContentYChanged: {
             var scrollUp = prevContentY > contentY
             var contentIndex = indexAt(contentX, contentY)
-            if (scrollUp && contentIndex === loadFrontTreshold && coolListModel.canFetchMoreFront()) {
-                coolListModel.fetchMoreFront()
-                //positionViewAtIndex(coolListModel.chunkSize, ListView.Beginning)
+            //Sometimes it misses to fetch items when strict condition contentIndex===treshold is used
+            //so, keep this workaround before this issue will be solved
+            if (scrollUp && !fetched && (contentIndex <= treshold && contentIndex >= treshold - 5)) {
+                fetched = coolListModel.fetchMoreFront()
             }
+            else if (fetched) {
+                fetched = false
+            }
+
             prevContentY = contentY
         }
 
